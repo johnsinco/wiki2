@@ -23,5 +23,19 @@ describe('GET /:key', () => {
       .get('/7?chunk=three')
       .set('Accept', 'application/json')
       .expect(200, '"four"',  done)
-  })
+  });
+});
+
+describe('POST /:key', () => {
+  it('stores the doc and returns the ID', (done) => {
+    request(app)
+      .post('/10')
+      .send({html: 'foo bar'})
+      .set('Accept', 'application/json')
+      .expect(200, '0', done)
+  });
+
+  after(() => {
+    store.del(10, (err) => {})
+  });
 });
