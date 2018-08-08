@@ -5,8 +5,8 @@ const store = require('../lib/store')
 
 describe('GET /:key', () => {
   before(() => {
-    store.put(7, [{one: 'two', three: 'four'}])
-      .then((doc) => {console.log(`stored testdoc ${doc}`)})
+    store.put(7, [{five: 'six'}, {one: 'two', three: 'four'}])
+      .then((doc) => {})
       .catch((err) => {console.log(`error!!! ${err}`)})
   })
 
@@ -16,6 +16,14 @@ describe('GET /:key', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200, done);
+  });
+
+  it('returns the doc version by ID', (done) => {
+    request(app)
+      .get('/7?id=0')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200, {five: 'six'}, done);
   });
 
   it('returns a part of the doc if requested', (done) => {
@@ -35,7 +43,21 @@ describe('POST /:key', () => {
       .expect(200, '0', done)
   });
 
+  it('returns a new id for an existing key', (done) => {
+    request(app)
+      .post('/20')
+      .send({html: 'foo bar'})
+      .set('Accept', 'application/json')
+      .expect(200, '1', done)
+  });
+
+  before(() => {
+    store.put(20, [{}])
+      .then((doc) => {})
+      .catch((err) => {console.log(`error!!! ${err}`)})
+  });
   after(() => {
     store.del(10, (err) => {})
+    store.del(20, (err) => {})
   });
 });
