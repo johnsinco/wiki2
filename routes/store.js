@@ -7,7 +7,6 @@ const store = require('../lib/store')
 router.get('/:key', function(req, res, next) {
   let key = req.params.key
   let id = req.query.id
-console.log(`------${key}`)
   if(!key) throw 'invalid key!'
   store.get(key)
     .then((data) => {
@@ -27,7 +26,6 @@ router.post('/:key', function(req, res) {
   var key = req.params.key
   store.get(key)
     .catch((err) => {
-      console.log(`in the get error block ${err}`)
       if(err && err.notFound) {
         return []
       }
