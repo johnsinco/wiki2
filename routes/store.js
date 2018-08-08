@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const level = require('level');
-const store = level('./kvstore-db', { valueEncoding: 'json' });
+const store = require('../lib/store')
 
 
 router.get('/:key', function(req, res, next) {
   let key = req.params.key
   let id = req.query.id
+console.log(`------${key}`)
   if(!key) throw 'invalid key!'
   store.get(key)
     .then((data) => {
