@@ -5,16 +5,20 @@ const store = level('./kvstore-db', { valueEncoding: 'json' });
 
 
 router.get('/:key', function(req, res, next) {
-  var key = req.params.key
+  let key = req.params.key
+  let id = req.query.id
   if(!key) throw 'invalid key!'
-  console.log(`key is ${key}`)
   store.get(key)
     .then((data) => {
-      var id = req.query.id || data.length - 1
-      res.json(data[id]);
+      var doc = data[id || (data.length - 1)];
+      if(!doc) throw "doc not found"
+      if(req.query.chunk) {
+        doc = doc[req.query.chunk]
+      }
+      res.json(doc);
     })
     .catch((err) => {
-      res.status(404).send(`key ${key} not found!`)
+      res.status(404).send(`key ${key} id ${id} not found!`)
     })
 });
 
