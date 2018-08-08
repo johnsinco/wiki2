@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const level = require('level');
-const store = level('./kvstore-db');
+const store = level('./kvstore-db', { valueEncoding: 'json' });
 
 
 router.get('/:key', function(req, res, next) {
@@ -10,7 +10,8 @@ router.get('/:key', function(req, res, next) {
   console.log(`key is ${key}`)
   store.get(key)
     .then((data) => {
-      res.json(data);
+      var id = req.query.id || data.length - 1
+      res.json(data[id]);
     })
     .catch((err) => {
       res.status(404).send(`key ${key} not found!`)
@@ -19,32 +20,24 @@ router.get('/:key', function(req, res, next) {
 
 router.post('/:key', function(req, res) {
   var key = req.params.key
-  console.log(`key is ${key}`)
-  console.log(`body is ${req.body} some key is ${req.body.some}`)
   store.get(key)
     .catch((err) => {
       console.log(`in the get error block ${err}`)
       if(err && err.notFound) {
-        // set the doc array to empty array
-        console.log('returning an empty array from the missing key error')
-        return "[]"
+        return []
       }
     })
     .then((doc_array) => {
-      console.log(`doc array from store is ----${doc_array}--${typeof doc_array}--`)
       // doc_array should be 1..n versions of the doc
       // push the new version onto the end
-      doc_array = JSON.parse(doc_array)
       doc_array.push(req.body)
-      console.log(`doc array is now >>${doc_array} --- ${typeof doc_array}`)
       return doc_array
     })
     .then((doc_array) => {
-      console.log(`in push block doc_array is ${doc_array} --- ${typeof doc_array} ${doc_array[0].some}`)
-      store.put(key, JSON.stringify(doc_array))
+      store.put(key, doc_array)
       .then(function () {
-        console.log(">>>>>>>>>>>>>>>>>>> after put")
-        res.status(200).send(doc_array.length.toString());
+        // return the id/index of the most recent stored version
+        res.status(200).send((doc_array.length - 1).toString());
       })
       .catch(function (err) { console.error(err) })
     })
